@@ -20,7 +20,18 @@ export const createQuotation = createAsyncThunk(
     }
   }
 );
- 
+ export const updateQuotation = createAsyncThunk(
+  'quotation/updateQuotation',
+  async (  updatedData , { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post(`/quotation/create`, updatedData);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 export const getQuotations = createAsyncThunk(
   'quotation/getQuotations',
   async (_, { rejectWithValue }) => {
@@ -45,17 +56,8 @@ export const getQuotationById = createAsyncThunk(
   }
 );
  
-export const updateQuotation = createAsyncThunk(
-  'quotation/updateQuotation',
-  async ({ quotationNumber, updatedData }, { rejectWithValue }) => {
-    try {
-      const res = await axiosInstance.put(`/quotation/updatequotation/${quotationNumber}`, updatedData);
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data || err.message);
-    }
-  }
-);
+
+
  
 export const updateQuotationStatus = createAsyncThunk(
   'quotation/updateQuotationStatus',
@@ -95,10 +97,32 @@ export const getPdfById = createAsyncThunk(
 );
  
  
+//ststus chek of client onbaording
+
+
+export const getClientStatusByQuotationId = createAsyncThunk(
+  'quotation/getClientStatusByQuotationId',
+  async (quotationId, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.get(`/quotation/client-status-by-quotation/${quotationId}`);
+      return res.data; // Expected: status, contact info, etc.
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+
+
 // Slice
 const quotationSlice = createSlice({
   name: 'quotation',
-  initialState,
+  initialState:{
+    quotations: [],
+    quotation: null,
+    loading: false,
+    error: null,
+  },
   reducers: {
     clearQuotationState: (state) => {
       state.quotation = null;
@@ -155,9 +179,9 @@ const quotationSlice = createSlice({
       .addCase(updateQuotation.fulfilled, (state, action) => {
         state.loading = false;
         state.quotation = action.payload;
-        state.quotations = state.quotations.map((q) =>
-          q.quotationNumber === action.payload.quotationNumber ? action.payload : q
-        );
+        // state.quotations = state.quotations.map((q) =>
+        //   q.quotationNumber === action.payload.quotationNumber ? action.payload : q
+        // );
       })
       .addCase(updateQuotation.rejected, (state, action) => {
         state.loading = false;
@@ -208,7 +232,23 @@ const quotationSlice = createSlice({
       .addCase(getPdfById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      
+      // Get Client Status by Quotation ID
+.addCase(getClientStatusByQuotationId.pending, (state) => {
+  state.loading = true;
+  state.clientStatus = null;
+})
+.addCase(getClientStatusByQuotationId.fulfilled, (state, action) => {
+  state.loading = false;
+  state.clientStatus = action.payload;
+})
+.addCase(getClientStatusByQuotationId.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
+
+      ;
   },
 });
  

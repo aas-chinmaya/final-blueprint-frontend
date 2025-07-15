@@ -54,7 +54,7 @@ const progressColors = {
 };
 
 export default function MyWorkedProject({ employeeId }) {
-  console.log('MyWorkedProject component rendered with employeeId:', employeeId);
+  // console.log('MyWorkedProject component rendered with employeeId:', employeeId);
   const dispatch = useDispatch();
   const router = useRouter();
   const { employeeProjects , status = {}, error = {} } = useSelector((state) => state.project || {});

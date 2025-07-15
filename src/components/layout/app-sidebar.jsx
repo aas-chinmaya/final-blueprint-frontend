@@ -28,7 +28,7 @@ import {
 
 
 export  function AppSidebar({ navMainItems,...props }) {
-console.log(props)
+// console.log(props)
 
   return (
     <Sidebar collapsible="icon" className="bg-[#0F1D41]" {...props}>

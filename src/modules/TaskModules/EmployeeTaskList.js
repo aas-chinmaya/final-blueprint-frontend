@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { getAllTaskByEmployeeId } from '@/features/taskSlice';
+import { getAllTaskByEmployeeId, updateTaskStatus } from '@/features/taskSlice';
 import {
   FiSearch,
   FiFilter,
@@ -13,8 +14,6 @@ import {
   FiArrowDown,
   FiEye,
   FiEdit,
-  FiTrash2,
-  FiPlus,
   FiClock,
   FiAlertCircle,
   FiCheckCircle,
@@ -49,8 +48,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Input as ShadInput } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from "sonner";
 
 // Status and priority styling
 const statusColors = {
@@ -85,10 +84,9 @@ const AllTasksList = () => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [viewTask, setViewTask] = useState(null);
   const [editTask, setEditTask] = useState(null);
-
-   const [currentPage, setCurrentPage] = useState(1);
-   const [tasksPerPage, setTasksPerPage] = useState(8);
-   const [goToPage, setGoToPage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [tasksPerPage, setTasksPerPage] = useState(8);
+  const [goToPage, setGoToPage] = useState('');
 
   useEffect(() => {
     if (employeeId) {
@@ -97,14 +95,11 @@ const AllTasksList = () => {
   }, [dispatch, employeeId]);
 
   // Reset to first page when tasksPerPage changes
-    useEffect(() => {
-  setCurrentPage(1);
-}, [searchTerm, selectedStatus, selectedPriority, sortField, sortDirection]);
-
-
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, selectedPriority, sortField, sortDirection]);
 
   const tasks = employeeTasks || [];
-  
 
   // Calculate task statistics
   const taskStats = {
@@ -117,55 +112,48 @@ const AllTasksList = () => {
     lowPriority: tasks.filter((task) => task.priority === 'Low').length,
   };
 
-
-
   // Filter and sort tasks
- const filteredAndSortedTasks = () => {
-  let filtered = tasks;
+  const filteredAndSortedTasks = () => {
+    let filtered = tasks;
 
-  if (selectedStatus !== 'all') {
-    filtered = filtered.filter((task) => task.status === selectedStatus);
-  }
-
-  if (selectedPriority !== 'all') {
-    filtered = filtered.filter((task) => task.priority === selectedPriority);
-  }
-
-  if (searchTerm.trim() !== '') {
-    const term = searchTerm.toLowerCase();
-    filtered = filtered.filter(
-      (task) =>
-        task.title?.toLowerCase().includes(term) ||
-        task.projectName?.toLowerCase().includes(term) ||
-        task.assignedBy?.toLowerCase().includes(term) ||
-        task.task_id?.toString().includes(term)
-    );
-  }
-
-
-
-  return [...filtered].sort((a, b) => {
-    const fieldA = a[sortField] || '';
-    const fieldB = b[sortField] || '';
-    if (sortDirection === 'asc') {
-      return fieldA < fieldB ? -1 : fieldA > fieldB ? 1 : 0;
-    } else {
-      return fieldA > fieldB ? -1 : fieldA < fieldB ? 1 : 0;
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter((task) => task.status === selectedStatus);
     }
-  });
-};
 
+    if (selectedPriority !== 'all') {
+      filtered = filtered.filter((task) => task.priority === selectedPriority);
+    }
 
-// Pagination logic
-const sortedTasks = filteredAndSortedTasks();
-const totalPages = Math.ceil(sortedTasks.length / tasksPerPage);
-const indexOfLastTask = currentPage * tasksPerPage;
-const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-const currentTasks = sortedTasks.slice(indexOfFirstTask, indexOfLastTask);
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (task) =>
+          task.title?.toLowerCase().includes(term) ||
+          task.projectName?.toLowerCase().includes(term) ||
+          task.assignedBy?.toLowerCase().includes(term) ||
+          task.task_id?.toString().includes(term)
+      );
+    }
 
+    return [...filtered].sort((a, b) => {
+      const fieldA = a[sortField] || '';
+      const fieldB = b[sortField] || '';
+      if (sortDirection === 'asc') {
+        return fieldA < fieldB ? -1 : fieldA > fieldB ? 1 : 0;
+      } else {
+        return fieldA > fieldB ? -1 : fieldA < fieldB ? 1 : 0;
+      }
+    });
+  };
 
+  // Pagination logic
+  const sortedTasks = filteredAndSortedTasks();
+  const totalPages = Math.ceil(sortedTasks.length / tasksPerPage);
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = sortedTasks.slice(indexOfFirstTask, indexOfLastTask);
 
-const handlePageChange = (pageNumber) => {
+  const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
@@ -178,40 +166,38 @@ const handlePageChange = (pageNumber) => {
       setCurrentPage(page);
       setGoToPage('');
     } else {
-      toast.info( `Please enter a page number between 1 and ${totalPages}.`
-      
-      );
+      alert(`Please enter a page number between 1 and ${totalPages}.`);
     }
   };
-
-
-
-
-
-
-
-
-
-
-
 
   const handleViewTask = (task) => {
     setViewTask(task);
   };
 
   const handleEditTask = (task) => {
-    setEditTask({ ...task });
+    if (task.status !== 'Completed') {
+      setEditTask({ ...task });
+    }
   };
 
-  const handleSaveEdit = () => {
-    console.log('Save edited task:', editTask);
-    // Add logic to dispatch an action to update the task in the backend
-    setEditTask(null);
-  };
-
-  const handleDeleteTask = (taskId) => {
-    console.log(`Delete task ${taskId}`);
-    // Add logic to dispatch an action to delete the task
+  const handleSaveEdit = async () => {
+    try {
+      const result = await dispatch(updateTaskStatus({ 
+        task_id: editTask.task_id, 
+        status: editTask.status 
+      }));
+      if (updateTaskStatus.fulfilled.match(result)) {
+        toast.success('Task status updated successfully!');
+        setEditTask(null);
+        // Refresh the task list
+        dispatch(getAllTaskByEmployeeId(employeeId));
+      } else {
+        toast.error('Failed to update task status.');
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error('An unexpected error occurred.');
+    }
   };
 
   const handleSort = (field) => {
@@ -238,8 +224,6 @@ const handlePageChange = (pageNumber) => {
     setSortField('title');
     setSortDirection('asc');
   };
-
- 
 
   if (userLoading || isLoading) {
     return <p className="text-green-600 text-center mt-4">Loading tasks...</p>;
@@ -310,8 +294,6 @@ const handlePageChange = (pageNumber) => {
                       <Badge variant="secondary" className="bg-green-100 text-green-800">
                         {taskStats.planned}
                       </Badge>
-                   
-
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusFilter('In Progress')}>
@@ -415,7 +397,6 @@ const handlePageChange = (pageNumber) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
             </div>
           </div>
         </div>
@@ -517,19 +498,16 @@ const handlePageChange = (pageNumber) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                        className={`${
+                          task.status === 'Completed'
+                            ? 'text-green-400 cursor-not-allowed'
+                            : 'text-green-600 hover:text-green-800 hover:bg-green-100'
+                        }`}
                         onClick={() => handleEditTask(task)}
+                        disabled={task.status === 'Completed'}
                       >
                         <FiEdit className="w-5 h-5" />
                       </Button>
-                      {/* <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-600 hover:text-red-800 hover:bg-red-100"
-                        onClick={() => handleDeleteTask(task.task_id)}
-                      >
-                        <FiTrash2 className="w-5 h-5" />
-                      </Button> */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -537,12 +515,9 @@ const handlePageChange = (pageNumber) => {
             </TableBody>
           </Table>
 
-
-
- {/* Pagination */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-4 mb-10">
-              {/* Items per page selector */}
               <div className="flex items-center space-x-2">
                 <Label htmlFor="tasksPerPage" className="text-green-700 ml-4">Tasks per page:</Label>
                 <Select
@@ -559,43 +534,38 @@ const handlePageChange = (pageNumber) => {
                   </SelectContent>
                 </Select>
               </div>
-
-        
-               {/* Pagination controls */}
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="text-green-600 hover:bg-green-100"
-                              >
-                                Previous
-                              </Button>
-                              {[...Array(totalPages).keys()].map((page) => (
-                                <Button
-                                  key={page + 1}
-                                  variant={currentPage === page + 1 ? 'default' : 'outline'}
-                                  onClick={() => handlePageChange(page + 1)}
-                                  className={
-                                    currentPage === page + 1
-                                      ? 'bg-green-600 text-white hover:bg-green-700'
-                                      : 'text-green-600 hover:bg-green-100'
-                                  }
-                                >
-                                  {page + 1}
-                                </Button>
-                              ))}
-                              <Button
-                                variant="outline"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="text-green-600 hover:bg-green-100"
-                              >
-                                Next
-                              </Button>
-                            </div>
-
-              {/* Go to page input */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="text-green-600 hover:bg-green-100"
+                >
+                  Previous
+                </Button>
+                {[...Array(totalPages).keys()].map((page) => (
+                  <Button
+                    key={page + 1}
+                    variant={currentPage === page + 1 ? 'default' : 'outline'}
+                    onClick={() => handlePageChange(page + 1)}
+                    className={
+                      currentPage === page + 1
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'text-green-600 hover:bg-green-100'
+                    }
+                  >
+                    {page + 1}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="text-green-600 hover:bg-green-100"
+                >
+                  Next
+                </Button>
+              </div>
               <div className="flex items-center space-x-2">
                 <Label htmlFor="goToPage" className="text-green-700">Go to page:</Label>
                 <Input
@@ -615,15 +585,7 @@ const handlePageChange = (pageNumber) => {
               </div>
             </div>
           )}
-
-
         </div>
-
-
-
-
-
-
       )}
 
       {/* View Task Modal */}
@@ -699,32 +661,28 @@ const handlePageChange = (pageNumber) => {
         <Dialog open={!!editTask} onOpenChange={() => setEditTask(null)}>
           <DialogContent className="sm:max-w-[425px] bg-white border-green-200">
             <DialogHeader>
-              <DialogTitle className="text-green-800">Edit Task</DialogTitle>
+              <DialogTitle className="text-green-800">Edit Task Status</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-green-700">ID</Label>
+                <span className="col-span-3 text-green-900">{editTask.task_id}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Task Name</Label>
-                <ShadInput
-                  className="col-span-3 border-green-300 focus:border-green-500 focus:ring-green-500"
-                  value={editTask.title}
-                  onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
-                />
+                <span className="col-span-3 text-green-900">{editTask.title}</span>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Description</Label>
-                <ShadInput
-                  className="col-span-3 border-green-300 focus:border-green-500 focus:ring-green-500"
-                  value={editTask.description}
-                  onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
-                />
+                <span className="col-span-3 text-green-900">{editTask.description}</span>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Project</Label>
-                <ShadInput
-                  className="col-span-3 border-green-300 focus:border-green-500 focus:ring-green-500"
-                  value={editTask.projectName}
-                  onChange={(e) => setEditTask({ ...editTask, projectName: e.target.value })}
-                />
+                <span className="col-span-3 text-green-900">{editTask.projectName}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-green-700">Assigned By</Label>
+                <span className="col-span-3 text-green-900">{editTask.assignedBy}</span>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Status</Label>
@@ -744,28 +702,15 @@ const handlePageChange = (pageNumber) => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Due Date</Label>
-                <ShadInput
-                  type="date"
-                  className="col-span-3 border-green-300 focus:border-green-500 focus:ring-green-500"
-                  value={editTask.deadline.split('T')[0]}
-                  onChange={(e) => setEditTask({ ...editTask, deadline: e.target.value })}
-                />
+                <span className="col-span-3 text-green-900">
+                  {new Date(editTask.deadline).toLocaleDateString()}
+                </span>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right text-green-700">Priority</Label>
-                <Select
-                  value={editTask.priority}
-                  onValueChange={(value) => setEditTask({ ...editTask, priority: value })}
-                >
-                  <SelectTrigger className="col-span-3 border-green-300 focus:border-green-500 focus:ring-green-500">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Badge className={`${priorityColors[editTask.priority]} border col-span-3`}>
+                  {editTask.priority}
+                </Badge>
               </div>
             </div>
             <DialogFooter>

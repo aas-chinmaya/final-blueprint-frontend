@@ -97,7 +97,7 @@ export const updateMoM = createAsyncThunk(
       for (let [key, value] of momData.entries()) {
         // console.log(`${key}:`, value); // Debug: Log FormData entries
       }
-      const response = await axiosInstance.put("/mom/update", momData, {
+      const response = await axiosInstance.post("/mom/createmom", momData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -1,13 +1,13 @@
 
 
 "use client";
-import { addDays, format } from "date-fns";
+import { addDays } from "date-fns";
 import { useMemo, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
-import { createQuotation } from "@/features/quotationSlice";
+import { getQuotationById, updateQuotation } from "@/features/quotationSlice";
 import { serviceProviderDetails } from "@/constants/constants";
 import { toast } from "sonner";
 import { useContactDetails } from "@/hooks/useContact";
@@ -41,7 +41,7 @@ const quotationSchema = z.object({
   termsAndConditions: z.string().min(1, "Terms and conditions are required"),
 });
 
-export default function CreateQuotationForm({ contactId }) {
+  function EditQuotationForm({ quotationNumber }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const currentDate = new Date();
@@ -54,15 +54,21 @@ export default function CreateQuotationForm({ contactId }) {
     dispatch(fetchUserByEmail());
   }, [dispatch]);
 
-  const { contact } = useContactDetails(contactId);
+  useEffect(() => {
+    if (quotationNumber) {
+      dispatch(getQuotationById(quotationNumber));
+    }
+  }, [dispatch, quotationNumber]);
+
+  const { contact } = useContactDetails(quotation?.clientDetails?.contactId || "");
 
   const staticData = useMemo(() => ({
     clientDetails: {
-      contactId,
-      name: contact?.fullName || "",
-      company: contact?.companyName || "",
-      email: contact?.email || "",
-      phone: contact?.phone || "",
+      contactId: quotation?.clientDetails?.contactId || contact?.contactId || "",
+      name: quotation?.clientDetails?.name || contact?.fullName || "",
+      company: quotation?.clientDetails?.company || contact?.companyName || "",
+      email: quotation?.clientDetails?.email || contact?.email || "",
+      phone: quotation?.clientDetails?.phone || contact?.phone || "",
     },
     serviceProviderDetails,
     preparedBy: {
@@ -70,7 +76,7 @@ export default function CreateQuotationForm({ contactId }) {
       designation: employeeData?.designation || "",
       email: employeeData?.email || "",
     },
-  }), [contact, contactId, employeeData]);
+  }), [quotation, contact, employeeData]);
 
   const {
     register,
@@ -78,6 +84,7 @@ export default function CreateQuotationForm({ contactId }) {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(quotationSchema),
@@ -93,6 +100,31 @@ export default function CreateQuotationForm({ contactId }) {
       termsAndConditions: "",
     },
   });
+
+  // Populate form with fetched quotation data
+  useEffect(() => {
+    if (quotation) {
+      console.log("Quotation data:", quotation); // Moved console.log here for clarity
+      reset({
+        projectTitle: quotation.projectTitle || "",
+        scopeOfWork: quotation.scopeOfWork || "",
+        deliverables: quotation.deliverables || "",
+        timeline: quotation.timeline || "",
+        items: quotation.items?.length > 0
+          ? quotation.items.map(item => ({
+              serviceName: item.serviceName || "",
+              basePrice: item.basePrice || "",
+              sellPrice: item.sellPrice || "",
+              currency: item.currency || "INR",
+            }))
+          : [{ serviceName: "", basePrice: "", sellPrice: "", currency: "INR" }],
+        taxPercent: quotation.taxPercent || 18,
+        currency: quotation.currency || "INR",
+        paymentTerms: quotation.paymentTerms || "",
+        termsAndConditions: quotation.termsAndConditions || "",
+      });
+    }
+  }, [quotation, reset]);
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
@@ -117,18 +149,22 @@ export default function CreateQuotationForm({ contactId }) {
     const now = new Date();
     const validTill = addDays(now, 7);
 
+    const updatedData = {
+      ...data,
+      quotationNumber,
+      date: now.toISOString(),
+      validTill: validTill.toISOString(),
+      clientDetails: staticData.clientDetails,
+      serviceProviderDetails: staticData.serviceProviderDetails,
+      preparedBy: staticData.preparedBy,
+      updatedBy: employeeData?.email,
+      Status, // Include Status inside updatedData
+    };
+
+    console.log("Payload being sent:", updatedData); // Debug payload
+
     try {
-      const quotationData = {
-        ...data,
-        date: now.toISOString(),
-        validTill: validTill.toISOString(),
-        clientDetails: staticData.clientDetails,
-        serviceProviderDetails: staticData.serviceProviderDetails,
-        preparedBy: staticData.preparedBy,
-        createdBy: employeeData?.email,
-        Status, // Add Status to payload
-      };
-      const result = await dispatch(createQuotation(quotationData)).unwrap();
+      const result = await dispatch(updateQuotation(updatedData)).unwrap();
       if (result.pdf) {
         const blob = new Blob([result.pdf], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
@@ -138,16 +174,16 @@ export default function CreateQuotationForm({ contactId }) {
         link.click();
         window.URL.revokeObjectURL(url);
       }
-      toast.success(`Quotation ${result.quotationNumber || "created"} successfully as ${Status}!`, {
+      toast.success(`Quotation ${result.quotationNumber || "updated"} successfully as ${Status}!`, {
         description: result.pdfUrl ? (
           <a href={result.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-green-700 underline">
             View Quotation PDF
           </a>
         ) : null,
       });
-      router.push("/quotation"); // Redirect to /quotation
+      router.push("/quotation");
     } catch (error) {
-      toast.error(`Failed to create quotation: ${error || "Unknown error"}`);
+      toast.error(`Failed to update quotation: ${error || "Unknown error"}`);
     }
   };
 
@@ -164,7 +200,7 @@ export default function CreateQuotationForm({ contactId }) {
         <div className="p-8">
           <h1 className="text-3xl font-bold text-indigo-900 flex items-center">
             <FileText className="h-8 w-8 mr-3 text-indigo-600" />
-            Create Quotation
+            Edit Quotation
           </h1>
           <form className="space-y-6 mt-6">
             {/* Client and Provider Details */}
@@ -225,7 +261,7 @@ export default function CreateQuotationForm({ contactId }) {
                   <input
                     {...register("timeline")}
                     placeholder="e.g., 4 weeks"
-                    className=" connotations mt-2 w-full h-10 text-sm bg-white border border-indigo-200 rounded-lg px-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
+                    className="mt-2 w-full h-10 text-sm bg-white border border-indigo-200 rounded-lg px-3 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400"
                   />
                   {errors.timeline && (
                     <p className="text-red-500 text-xs mt-1">{errors.timeline.message}</p>
@@ -362,19 +398,20 @@ export default function CreateQuotationForm({ contactId }) {
             {/* Totals */}
             <div className="bg-[#f1f1f1] p-4 rounded-lg">
               <h2 className="text-lg font-semibold text-indigo-900 flex items-center">
+                <DollarSign className="h-5 w-5 mr-2" />
                 Totals
               </h2>
               <div className="mt-3 space-y-2 text-sm text-indigo-800">
                 <div className="flex justify-between">
-                  <span className="flex items-center"> Subtotal</span>
+                  <span className="flex items-center"><DollarSign className="h-4 w-4 mr-2" /> Subtotal</span>
                   <span>{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="flex items-center"> Tax ({taxPercent || 0}%)</span>
+                  <span className="flex items-center"><Percent className="h-4 w-4 mr-2" /> Tax ({taxPercent || 0}%)</span>
                   <span>{formatCurrency(taxAmount, currency)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
-                  <span className="flex items-center"> Total</span>
+                  <span className="flex items-center"><DollarSign className="h-4 w-4 mr-2" /> Total</span>
                   <span>{formatCurrency(total, currency)}</span>
                 </div>
               </div>
@@ -427,24 +464,7 @@ export default function CreateQuotationForm({ contactId }) {
 
             {/* Submit Buttons */}
             <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={handleSubmit(onSubmit("draft"))}
-                className="h-10 px-6 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Save as Draft
-                  </>
-                )}
-              </button>
+             
               <button
                 type="button"
                 onClick={handleSubmit(onSubmit("final"))}
@@ -470,3 +490,8 @@ export default function CreateQuotationForm({ contactId }) {
     </div>
   );
 }
+
+
+
+
+export default EditQuotationForm;

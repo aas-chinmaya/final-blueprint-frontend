@@ -7,7 +7,6 @@ export const fetchIndustries = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
         const response = await axiosInstance.get('/industry/getindustry');
-        console.log('Fetched industries:', response.data);
         return response.data;
         } catch (error) {
         return rejectWithValue(error.response?.data?.message || 'Failed to fetch industries');
@@ -21,7 +20,6 @@ export const addIndustry = createAsyncThunk(
     async (industryData, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.post('/industry/createindustry', industryData);
-            console.log('add industries:', response.data);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to add industry');
@@ -35,7 +33,6 @@ export const updateIndustry = createAsyncThunk(
   async (industryData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put(`/industry/updateIndustry/${industryData.id}`, industryData);
-           console.log('update industries:', response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update industry');
@@ -50,7 +47,6 @@ export const deleteIndustry = createAsyncThunk(
   async (industryId, { rejectWithValue }) => {
     try {
       await axiosInstance.delete(`/industry/deleteIndustry/${industryId}`);
-           console.log('Deleted industry:', industryId);
       return industryId;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete industry');
@@ -65,7 +61,6 @@ export const getIndustryById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/industry/IndustryById/${id}`);
-      console.log('Fetched industry by ID:', response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch industry');
