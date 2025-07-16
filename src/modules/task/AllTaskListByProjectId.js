@@ -174,7 +174,7 @@ console.log('Tasks:', tasks);
                   <td className="px-4 py-4 whitespace-nowrap">{index + 1}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{task.task_id}</td>
                   <td className="px-4 py-4 whitespace-nowrap">{task.title}</td>
-                  <td className="px-4 py-4 whitespace-nowrap">{task?.assignedToDetails.memberName}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">{task?.assignedToDetails?.memberName}</td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 py-1 inline-flex text-xs font-medium rounded-full ${

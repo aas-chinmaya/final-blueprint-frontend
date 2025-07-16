@@ -83,7 +83,7 @@ const handleViewQuotation = async (quotationNumber) => {
   setLoadingQuotation(true);
 
   setSelectedQuotationNumber(quotationNumber); // Triggers the useEffect above
-console.log("Selected Quotation clientStatus:", clientStatus);
+// console.log("Selected Quotation clientStatus:", clientStatus);
   const result = await dispatch(getQuotationById(quotationNumber));
   if (result?.payload) {
     setIsViewModalOpen(true);
