@@ -40,6 +40,10 @@ import industriesReducer from '@/features/master/industriesMasterSlice';
 
 import projectTeamMeetingReducer from "@/features/projectteammeetingSlice"
 import projectMeetingsReducer from "@/features/projetMeetingSlice"
+
+
+import projectMeetReducer from "@/features/projectmeetSlice"
+
 const store = configureStore({
   reducer: {
     sidebar:sidebarReducer,
@@ -80,7 +84,14 @@ teammeetingMom:teammeetingMomReducer,
   projectTeam: viewTeamByProjectIdReducer,
 
   projectTeamMeeting: projectTeamMeetingReducer,
-  projectMeetings:projectMeetingsReducer
+  projectMeetings:projectMeetingsReducer,
+
+
+
+
+  //project meeting
+  projectMeet:projectMeetReducer
+  
   },
 })
 export default store;

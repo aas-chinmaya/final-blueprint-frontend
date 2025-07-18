@@ -29,7 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { fetchAllSlots } from '@/features/master/slotMasterSlice';
 import { useLoggedinUser } from '@/hooks/useLoggedinUser';
 import { getTeamMeetingData } from '@/features/projectteammeetingSlice';
-import { createMeeting } from '@/features/meetingSlice';
+import { createProjectMeeting } from '@/features/projectmeetSlice';
 
 const TIME_ZONE = 'Asia/Kolkata';
 
@@ -60,6 +60,7 @@ export default function TeamMeetingCreateForm({ projectId, teamLeadId,onSubmit }
   const initialDate = new Date();
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [form, setForm] = useState({
+    // email: "it_pujarini@outlook.com",
     email: "it_chinmaya@outlook.com",
     // email: currentUser?.email || '',
     summary: '',
@@ -151,10 +152,11 @@ export default function TeamMeetingCreateForm({ projectId, teamLeadId,onSubmit }
         startTime: form.selectedSlot.startTime,
         endTime: form.selectedSlot.endTime,
       },
+      projectId,
     };
 
     try {
-      const result = await dispatch(createMeeting(payload)).unwrap();
+      const result = await dispatch(createProjectMeeting(payload)).unwrap();
       setSuccessMessage('Meeting created successfully!');
       setFormError('');
       // Reset form
@@ -188,16 +190,7 @@ export default function TeamMeetingCreateForm({ projectId, teamLeadId,onSubmit }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {formError && (
-        <Alert variant="destructive">
-          <AlertDescription>{formError}</AlertDescription>
-        </Alert>
-      )}
-      {successMessage && (
-        <Alert variant="success">
-          <AlertDescription>{successMessage}</AlertDescription>
-        </Alert>
-      )}
+
 
       {/* Date & Slot Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

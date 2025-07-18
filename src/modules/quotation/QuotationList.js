@@ -616,18 +616,7 @@ const handleViewQuotation = async (quotationNumber) => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {
-                          quotation.Status !== "final" && (
-                            <Button
-                              title="Create PDF"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleViewPdf()}
-                            >
-                              <Calendar className="h-4 w-4" />
-                            </Button>
-                          )
-                        }
+                       
                         <Button
                           title="Edit Quotation"
                           variant="outline"

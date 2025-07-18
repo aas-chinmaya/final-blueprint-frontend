@@ -1,8 +1,4 @@
 
-
-
-
-
 "use client";
 
 import {
@@ -15,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 import {
   Eye,
   CalendarDays,
@@ -24,45 +19,38 @@ import {
   Video,
   FileText,
 } from "lucide-react";
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getMeetingsByEmail,
-  clearProjectMeetingsError,
-} from "@/features/projetMeetingSlice";
+import { fetchAllProjectMeetings } from "@/features/projectmeetSlice";
 import Spinner from "@/components/loader/Spinner";
-
-// 👉 Import your MoM component (adjust path as needed)
 import ProjectWiseTeamMeetMOMDetails from "./ProjectWiseTeamMeetMOMDetails";
 
-const ProjectWiseTeamMeet = ({project}) => {
+const ProjectWiseTeamMeet = ({ project }) => {
   const dispatch = useDispatch();
-  const email = "it_chinmaya@outlook.com";
-
-  const { projectmeetings, loading, error } = useSelector(
-    (state) => state.projectMeetings
-  );
+  const projectId = project?.projectId;
+  const { meetings, loading, error } = useSelector((state) => state.projectMeet);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const meetingsPerPage = 10;
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [selectedMoMMeeting, setSelectedMoMMeeting] = useState(null);
+  const meetingsPerPage = 10;
 
+  // Fetch meetings when projectId changes
   useEffect(() => {
-    if (email) {
-      dispatch(getMeetingsByEmail(email));
+    if (projectId) {
+      dispatch(fetchAllProjectMeetings(projectId));
     }
-  }, [dispatch, email]);
+  }, [dispatch, projectId]);
 
+  // Log meetings and errors for debugging
   useEffect(() => {
+    if (meetings) {
+      console.log("✅ Project Meetings:", meetings);
+    }
     if (error) {
-      const timer = setTimeout(() => {
-        dispatch(clearProjectMeetingsError());
-      }, 5000);
-      return () => clearTimeout(timer);
+      console.error("❌ Error fetching meetings:", error);
     }
-  }, [error, dispatch]);
+  }, [meetings, error]);
 
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
@@ -73,31 +61,31 @@ const ProjectWiseTeamMeet = ({project}) => {
     });
   };
 
+  // Ensure meetings is an array to prevent 'slice' error
+  const safeMeetings = Array.isArray(meetings) ? meetings : [];
   const indexOfLastMeeting = currentPage * meetingsPerPage;
   const indexOfFirstMeeting = indexOfLastMeeting - meetingsPerPage;
-  const currentMeetings = projectmeetings.slice(
-    indexOfFirstMeeting,
-    indexOfLastMeeting
-  );
-  const totalPages = Math.ceil(projectmeetings.length / meetingsPerPage);
+  const currentMeetings = safeMeetings.slice(indexOfFirstMeeting, indexOfLastMeeting);
+  const totalPages = Math.ceil(safeMeetings.length / meetingsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 p-6">
+  
+
       {loading && (
         <div className="flex items-center justify-center py-10">
           <Spinner className="h-6 w-6 text-blue-600 animate-spin" />
         </div>
       )}
 
-      {error && <p className="text-red-500">Error: {error}</p>}
 
-      {!loading && !error && projectmeetings.length === 0 && (
-        <p className="text-muted-foreground">No meetings found.</p>
+      {!loading && !error && safeMeetings.length === 0 && (
+        <p className="text-muted-foreground">No meetings found for this project.</p>
       )}
 
-      {!loading && !error && projectmeetings.length > 0 && (
+      {!loading && !error && safeMeetings.length > 0 && (
         <div className="overflow-x-auto border rounded-md">
           <table className="w-full text-sm text-left border-collapse">
             <thead className="bg-blue-50 text-xs text-blue-800 uppercase">
@@ -115,10 +103,10 @@ const ProjectWiseTeamMeet = ({project}) => {
                     {meeting.summary}
                   </td>
                   <td className="p-3 border whitespace-nowrap">
-                    {formatDateTime(meeting.start.dateTime)}
+                    {formatDateTime(meeting.start)}
                   </td>
                   <td className="p-3 border whitespace-nowrap">
-                    {formatDateTime(meeting.end.dateTime)}
+                    {formatDateTime(meeting.end)}
                   </td>
                   <td className="p-3 border text-center">
                     <div className="flex justify-center gap-2">
@@ -194,11 +182,11 @@ const ProjectWiseTeamMeet = ({project}) => {
               </p>
               <div className="flex items-center gap-2 text-gray-600">
                 <CalendarDays className="w-4 h-4" />
-                Start: {formatDateTime(selectedMeeting.start.dateTime)}
+                Start: {formatDateTime(selectedMeeting.start)}
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Clock className="w-4 h-4" />
-                End: {formatDateTime(selectedMeeting.end.dateTime)}
+                End: {formatDateTime(selectedMeeting.end)}
               </div>
               <div className="flex items-start gap-2 text-gray-600">
                 <Users className="w-4 h-4 mt-1" />
@@ -217,7 +205,6 @@ const ProjectWiseTeamMeet = ({project}) => {
                   </ul>
                 </div>
               </div>
-
               <div className="flex items-center gap-2 text-gray-600">
                 <Video className="w-4 h-4" />
                 <a
@@ -229,10 +216,9 @@ const ProjectWiseTeamMeet = ({project}) => {
                   Join Meeting
                 </a>
               </div>
-
               <p>
-                <strong>Conference ID:</strong>{" "}
-                {selectedMeeting.conferenceData?.conferenceId || "N/A"}
+                <strong>Event ID:</strong>{" "}
+                {selectedMeeting.eventId || "N/A"}
               </p>
               <p>
                 <strong>Calendar Link:</strong>{" "}
@@ -260,8 +246,10 @@ const ProjectWiseTeamMeet = ({project}) => {
           </DialogHeader>
           {selectedMoMMeeting && (
             <div className="max-h-[70vh] overflow-y-auto">
-              <ProjectWiseTeamMeetMOMDetails project={project} meeting={selectedMoMMeeting} />
-              {/* <ProjectWiseTeamMeetMOMDetails meetingId={selectedMoMMeeting.eventId} /> */}
+              <ProjectWiseTeamMeetMOMDetails
+                project={project}
+                meeting={selectedMoMMeeting}
+              />
             </div>
           )}
         </DialogContent>
