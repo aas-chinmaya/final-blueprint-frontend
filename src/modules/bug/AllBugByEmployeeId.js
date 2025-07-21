@@ -197,9 +197,11 @@ export default function AllBugByEmployeeId() {
     }
 
     dispatch(resolveBug(payload)).then((result) => {
+
       if (result.error) {
         toast.error(`Failed to resolve bug: ${result.error.message}`)
       } else {
+        dispatch(fetchBugByEmployeeId(employeeId))
         toast.success('Bug resolved successfully!')
         handleModalClose()
       }
@@ -287,7 +289,6 @@ export default function AllBugByEmployeeId() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <BugIcon className="w-8 h-8 text-green-600" />
               <h1 className="text-2xl sm:text-3xl font-bold text-green-800">Assigned Issues</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
@@ -398,7 +399,7 @@ export default function AllBugByEmployeeId() {
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                  {/* <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => handleSort('bug_id')}>
                     <div className="flex justify-between w-full">
                       <span>Bug ID</span>
@@ -427,7 +428,7 @@ export default function AllBugByEmployeeId() {
                         (sortDirection === 'asc' ? <ArrowUp className="ml-2" /> : <ArrowDown className="ml-2" />)}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator /> */}
                   <DropdownMenuItem onClick={clearFilters} className="justify-center">
                     Clear All Filters
                   </DropdownMenuItem>
@@ -621,79 +622,150 @@ export default function AllBugByEmployeeId() {
             <DialogTitle className="text-green-800">Bug Details</DialogTitle>
           </DialogHeader>
           {selectedBug && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Bug ID</Label>
-                <span className="col-span-3 text-green-900">{selectedBug.bug_id}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Title</Label>
-                <span className="col-span-3 text-green-900">{selectedBug.title}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Description</Label>
-                <span className="col-span-3 text-green-900">{selectedBug.description || 'No description provided'}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Task Ref</Label>
-                <span className="col-span-3 text-green-900">{selectedBug.taskRef}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Project Id</Label>
-                <span className="col-span-3 text-green-900">{selectedBug.projectId}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Assigned To</Label>
-                <span className="col-span-3 text-green-900">{selectedBug?.assignedToDetails?.memberName || 'Unassigned'}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Status</Label>
-                <Badge className={`${statusColors[selectedBug.status.toLowerCase()]} border col-span-3 capitalize`}>
-                  {selectedBug.status}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Review Status</Label>
-                <Badge className={`${reviewStatusColors[selectedBug.reviewStatus]} border col-span-3 capitalize`}>
-                  {selectedBug.reviewStatus}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Priority</Label>
-                <Badge className={`${priorityColors[selectedBug.priority]} border col-span-3`}>
-                  {selectedBug.priority}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Deadline</Label>
-                <span className="col-span-3 text-green-900">
-                  {new Date(selectedBug.deadline).toLocaleDateString('en-IN')}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right text-green-700">Created At</Label>
-                <span className="col-span-3 text-green-900">
-                  {new Date(selectedBug.createdAt).toLocaleDateString('en-IN')}
-                </span>
-              </div>
+            // <div className="grid gap-4 py-4">
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Bug ID</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug.bug_id}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Title</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug.title}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Description</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug.description || 'No description provided'}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Task Ref</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug.taskRef}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Project Id</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug.projectId}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Assigned To</Label>
+            //     <span className="col-span-3 text-green-900">{selectedBug?.assignedToDetails?.memberName || 'Unassigned'}</span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Status</Label>
+            //     <Badge className={`${statusColors[selectedBug.status.toLowerCase()]} border col-span-3 capitalize`}>
+            //       {selectedBug.status}
+            //     </Badge>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Review Status</Label>
+            //     <Badge className={`${reviewStatusColors[selectedBug.reviewStatus]} border col-span-3 capitalize`}>
+            //       {selectedBug.reviewStatus}
+            //     </Badge>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Priority</Label>
+            //     <Badge className={`${priorityColors[selectedBug.priority]} border col-span-3`}>
+            //       {selectedBug.priority}
+            //     </Badge>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Deadline</Label>
+            //     <span className="col-span-3 text-green-900">
+            //       {new Date(selectedBug.deadline).toLocaleDateString('en-IN')}
+            //     </span>
+            //   </div>
+            //   <div className="grid grid-cols-4 items-center gap-4">
+            //     <Label className="text-right text-green-700">Created At</Label>
+            //     <span className="col-span-3 text-green-900">
+            //       {new Date(selectedBug.createdAt).toLocaleDateString('en-IN')}
+            //     </span>
+            //   </div>
            
-              {selectedBug.status.toLowerCase() !== 'resolved' && new Date() > new Date(selectedBug.deadline) && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right text-green-700">Delay Reason</Label>
-                  <Input
-                    className="col-span-3 border-green-400 focus:ring-green-500"
-                    value={delayReason}
-                    onChange={(e) => setDelayReason(e.target.value)}
-                    placeholder="Enter reason for delay"
-                  />
-                </div>
-              )}
-              {error.bugResolve && (
-                <div className="col-span-4 text-red-500 text-sm font-medium p-3 bg-red-50 rounded-md">
-                  {error.bugResolve}
-                </div>
-              )}
-            </div>
+            //   {selectedBug.status.toLowerCase() !== 'resolved' && new Date() > new Date(selectedBug.deadline) && (
+            //     <div className="grid grid-cols-4 items-center gap-4">
+            //       <Label className="text-right text-green-700">Delay Reason</Label>
+            //       <Input
+            //         className="col-span-3 border-green-400 focus:ring-green-500"
+            //         value={delayReason}
+            //         onChange={(e) => setDelayReason(e.target.value)}
+            //         placeholder="Enter reason for delay"
+            //       />
+            //     </div>
+            //   )}
+            //   {error.bugResolve && (
+            //     <div className="col-span-4 text-red-500 text-sm font-medium p-3 bg-red-50 rounded-md">
+            //       {error.bugResolve}
+            //     </div>
+            //   )}
+            // </div>
+            <div className="space-y-4 py-4">
+  {[
+    { label: 'Bug ID', value: selectedBug.bug_id },
+    { label: 'Title', value: selectedBug.title },
+    { label: 'Description', value: selectedBug.description || 'No description provided' },
+    { label: 'Task Ref', value: selectedBug.taskRef },
+    { label: 'Project Id', value: selectedBug.projectId },
+    { label: 'Assigned To', value: selectedBug?.assignedToDetails?.memberName || 'Unassigned' },
+    {
+      label: 'Status',
+      value: (
+        <Badge className={`${statusColors[selectedBug.status.toLowerCase()]} capitalize`}>
+          {selectedBug.status}
+        </Badge>
+      ),
+    },
+    {
+      label: 'Review Status',
+      value: (
+        <Badge className={`${reviewStatusColors[selectedBug.reviewStatus]} capitalize`}>
+          {selectedBug.reviewStatus}
+        </Badge>
+      ),
+    },
+    {
+      label: 'Priority',
+      value: (
+        <Badge className={`${priorityColors[selectedBug.priority]} capitalize`}>
+          {selectedBug.priority}
+        </Badge>
+      ),
+    },
+    {
+      label: 'Deadline',
+      value: new Date(selectedBug.deadline).toLocaleDateString('en-IN'),
+    },
+    {
+      label: 'Created At',
+      value: new Date(selectedBug.createdAt).toLocaleDateString('en-IN'),
+    },
+  ].map(({ label, value }, index) => (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6" key={index}>
+      <Label className="sm:w-1/4 w-full font-bold text-green-700 text-sm text-right sm:text-right">
+        {label}
+      </Label>
+      <div className="sm:w-3/4 w-full text-black whitespace-pre-wrap break-words">{value}</div>
+    </div>
+  ))}
+
+  {selectedBug.status.toLowerCase() !== 'resolved' &&
+    new Date() > new Date(selectedBug.deadline) && (
+      <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6">
+        <Label className="sm:w-1/4 w-full font-bold text-green-700 text-sm text-right sm:text-right">
+          Delay Reason
+        </Label>
+        <Input
+          className="sm:w-3/4 w-full border-green-400 focus:ring-green-500 text-black"
+          value={delayReason}
+          onChange={(e) => setDelayReason(e.target.value)}
+          placeholder="Enter reason for delay"
+        />
+      </div>
+    )}
+
+  {error.bugResolve && (
+    <div className="text-red-500 text-sm font-medium p-3 bg-red-50 rounded-md">
+      {error.bugResolve}
+    </div>
+  )}
+</div>
+
           )}
           <DialogFooter>
             {selectedBug?.status.toLowerCase() !== 'resolved' && (

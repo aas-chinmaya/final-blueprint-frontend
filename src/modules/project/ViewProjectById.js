@@ -157,8 +157,8 @@ export default function ViewProjectById({ projectId }) {
     },
   ];
 
-  const isTasksTeamDisabled = currentUser?.role !== "cpc" && !isTeamLead;
-  const isBugDisabled = currentUser?.role !== "cpc" && !isTeamLead;
+  const isTasksTeamDisabled = currentUser?.role !== "CPC" && !isTeamLead;
+  const isBugDisabled = currentUser?.role !== "CPC" && !isTeamLead;
 
   if (status.fetchProject === "loading") {
     return (
@@ -230,28 +230,18 @@ export default function ViewProjectById({ projectId }) {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
             <TabsList className="p-1 bg-gray-100 rounded-full flex flex-wrap justify-center sm:justify-start gap-2">
               {tabs.map((tab) => (
-                // <TabsTrigger
-                //   key={tab.id}
-                //   value={tab.id}
-                //   disabled={tab.id !== "details" && isTasksTeamDisabled}
-                //   className={`flex items-center gap-2 rounded-full py-2 px-4 text-sm font-medium transition-colors
-                //     ${activeTab === tab.id ? "bg-blue" : "text-gray-700 hover:bg-blue-100"}
-                //     ${tab.id !== "details" && isTasksTeamDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                // >
-                //   {tab.icon}
-                //   <span className="hidden sm:inline">{tab.label}</span>
-                // </TabsTrigger>
+              
                 <TabsTrigger
               key={tab.id}
               value={tab.id}
               disabled={
-                (tab.id === "details" && isTasksTeamDisabled) ||
+                // (tab.id === "details" && isTasksTeamDisabled) ||
                 (tab.id === "bug" && isBugDisabled)
               }
               className={`flex items-center gap-2 rounded-full py-2 px-4 text-sm font-medium transition-colors
                 ${activeTab === tab.id ? "bg-blue" : "text-gray-700 hover:bg-blue-100"}
                 ${
-                  (tab.id === "details" && isTasksTeamDisabled) ||
+                  // (tab.id === "details" && isTasksTeamDisabled) ||
                   (tab.id === "bug" && isBugDisabled)
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -477,7 +467,7 @@ export default function ViewProjectById({ projectId }) {
                     />
                   )
                 ) : (
-                  <ViewTeamByProjectId projectId={projectId} />
+                  <ViewTeamByProjectId project={project} projectId={projectId} />
                 )}
               </div>
             </TabsContent>

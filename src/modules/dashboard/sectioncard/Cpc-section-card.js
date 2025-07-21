@@ -131,7 +131,7 @@ export function SectionCardCPC() {
       badge: "+12.5%",
       trendIcon: <IconTrendingUp />,
       footer: "Increased project participation",
-      note: "Tracks all assigned or collaborated projects",
+      note: "Tracks all  projects",
     },
     {
       title: "All Clients",
@@ -177,9 +177,9 @@ export function SectionCardCPC() {
                   <CardDescription>{card.title}</CardDescription>
                   <CardTitle className="text-2xl font-semibold">{card.count}</CardTitle>
                   <CardAction>
-                    <Badge variant="outline">
+                    {/* <Badge variant="outline">
                       {card.trendIcon} {card.badge}
-                    </Badge>
+                    </Badge> */}
                   </CardAction>
                 </CardHeader>
                 <CardFooter className="flex-col items-start gap-1.5 text-sm">

@@ -127,9 +127,9 @@ export function SectionCardEmployee({ employeeId }) {
                   <CardDescription>{card.title}</CardDescription>
                   <CardTitle className="text-2xl font-semibold">{card.count}</CardTitle>
                   <CardAction>
-                    <Badge variant="outline">
+                    {/* <Badge variant="outline">
                       <IconTrendingUp className="size-4" /> {card.badge}
-                    </Badge>
+                    </Badge> */}
                   </CardAction>
                 </CardHeader>
                 <CardFooter className="flex-col items-start gap-1.5 text-sm">

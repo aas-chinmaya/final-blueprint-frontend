@@ -18,7 +18,7 @@ export const getMeetingsByEmail = createAsyncThunk(
 const initialState = {
   projectmeetings: [],
   loading: false,
-  error: null,
+  // error: null,
 };
 
 // ✅ Slice
