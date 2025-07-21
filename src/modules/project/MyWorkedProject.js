@@ -193,8 +193,7 @@ export default function MyWorkedProject({ employeeId }) {
         <div className="mx-auto py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Briefcase className="w-8 h-8 text-green-700" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-green-700">MY Projects</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-green-700">Projects</h1>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">

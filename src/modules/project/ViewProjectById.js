@@ -51,6 +51,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import TeamMeetingCreateForm from "../meetings/team-meetings/TeamMeetingCreateForm";
 import ProjectWiseTeamMeet from "../meetings/team-meetings/ProjectWiseTeamMeet";
 import ProjectWisebugList from "../bug/ProjectWisebugList";
+import { useLoggedinUser } from "@/hooks/useLoggedinUser";
 
 export default function ViewProjectById({ projectId }) {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function ViewProjectById({ projectId }) {
     }
   }, [dispatch, projectId]);
 
-  const { currentUser, isTeamLead } = useCurrentUser(project?.data?.teamLeadId);
+  const { currentUser ,isTeamLead} = useCurrentUser(project?.data?.teamLeadId);
 
   useEffect(() => {
     if (successMessage && !hasFetchedAfterStatusChange) {
@@ -157,8 +158,13 @@ export default function ViewProjectById({ projectId }) {
     },
   ];
 
+
   const isTasksTeamDisabled = currentUser?.role !== "CPC" && !isTeamLead;
   const isBugDisabled = currentUser?.role !== "CPC" && !isTeamLead;
+
+
+
+
 
   if (status.fetchProject === "loading") {
     return (

@@ -622,7 +622,7 @@ const ViewTeamByProjectId = ({ projectId,project }) => {
                         {selectedTeam.teamLeadName}
                       </p>
                       <p className="text-xs sm:text-sm text-gray-600">
-                        ID: {selectedTeam.teamLeadId}
+                        Team Lead ID: {selectedTeam.teamLeadId}
                       </p>
                     </div>
                   </div>
@@ -656,6 +656,8 @@ const ViewTeamByProjectId = ({ projectId,project }) => {
                             </p>
                           </div>
                         </div>
+                            {isTeamLead && (
+
                         <button
                           onClick={() => {
                             setSelectedMember(member);
@@ -670,6 +672,7 @@ const ViewTeamByProjectId = ({ projectId,project }) => {
                         >
                           Assign Task
                         </button>
+                            )}
                       </div>
                     ))}
                   </div>

@@ -25,7 +25,7 @@ export function NavMain({ items }) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      {/* <SidebarGroupLabel></SidebarGroupLabel> */}
       <SidebarMenu>
         {items.map((item) => {
           // CHANGED: Determine if item or any sub-item is active

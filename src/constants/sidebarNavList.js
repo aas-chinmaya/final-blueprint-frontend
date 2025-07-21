@@ -8,6 +8,7 @@ import {
   ListChecks,
   Bug,
   FolderClosed,
+  FileText,
 } from 'lucide-react';
 
 export const fullNav = [
@@ -27,7 +28,7 @@ export const fullNav = [
     title: "Meeting",
     url: "#",
     icon: CalendarDays,
-    roles: ["cpc", "employee"],
+    roles: ["cpc"],
     items: [
       { title: "Client Meeting", url: "/meetings/all", roles: ["cpc"] },
       { title: "Meeting Calendar", url: "/meetings/calendar", roles: ["cpc"] },
@@ -39,7 +40,7 @@ export const fullNav = [
   {
     title: "Quotation",
     url: "/quotation",
-    icon: PhoneCall,
+    icon: FileText,
     roles: ["cpc"],
   },
   {
@@ -58,7 +59,7 @@ export const fullNav = [
     title: "Team",
     url: "/team",
     icon: Users,
-    roles: ["cpc",, "employee"],
+    roles: ["cpc", "employee"],
   },
   {
     title: "Task",
@@ -66,17 +67,34 @@ export const fullNav = [
     icon: ListChecks,
     roles: ["cpc", "employee"],
   },
+ 
+
   {
     title: "Bug",
-    url: "#",
+    url: "/bug",
     icon: Bug,
-    roles: ["cpc", "employee"],
-     items: [
-      { title: "All Bug", url: "/bug", roles: ["cpc"] },
-      { title: "Assigned Bug", url: "/bug/assigned-bugs", roles: ["employee"] },
+    roles: ["cpc"],
    
-    ],
   },
+
+  {
+    title: "Bug",
+    url: "/bug/assigned-bugs",
+    icon: Bug,
+    roles: ["employee"],
+   
+  },
+  // {
+  //   title: "Bug",
+  //   url: "#",
+  //   icon: Bug,
+  //   roles: ["cpc", "employee"],
+  //    items: [
+  //     { title: "All Bug", url: "/bug", roles: ["cpc"] },
+  //     { title: "Assigned Bug", url: "/bug/assigned-bugs", roles: ["employee"] },
+   
+  //   ],
+  // },
   {
     title: "Master",
     url: "#",
